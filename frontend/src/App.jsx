@@ -1,35 +1,48 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const webSocket = new WebSocket('ws://localhost:3000')
+
+  const [inputData, setInputData] = useState(null);
+
+  const [x, setX] = useState("");
+  const [y, setY] = useState("");
+  const [z, setZ] = useState("");
+  const [acc, setAcc] = useState(false)
+
+  function handleMotionEvent(event) {
+
+    // console.log("handle motion event", event);
+
+    var x = event.accelerationIncludingGravity.x;
+    var y = event.accelerationIncludingGravity.y;
+    var z = event.accelerationIncludingGravity.z;
+
+
+    setX(x);
+    setY(y);
+    setZ(z);
+
+  }
+
+  useEffect(() => {
+    window.addEventListener("devicemotion", handleMotionEvent, true);
+  }, [x, y, z]);
 
   return (
-    <>
+    <div className="App">
+      <h1>Device Motion</h1>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        X - {x} Y - {y} Z - {z}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <button>Accelerate</button>
+      <button>Break</button>
+    </div>
+  );
 }
 
 export default App
