@@ -1,12 +1,13 @@
-use std::ops::AddAssign;
 use bevy::prelude::*;
-
+use bevy_rapier3d::prelude::*;
 #[derive(Component)]
 struct Car;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, (make_a_big_ass_flat_plane, hi_car))
         .add_systems(Update, (update_car, move_camera))
         .run();
@@ -27,7 +28,7 @@ fn make_a_big_ass_flat_plane(mut commands: Commands,
         ..default()
     });
 
-    commands.spawn((
+    commands.spawn(Collider::cuboid(10.0, 0.1, 10.0)).insert((
         Mesh3d(meshes.add(Plane3d::new(Vec3::Y, Vec2::new(10.0, 10.0)))),
         MeshMaterial3d(material_handle),
         Transform::from_xyz(0.0, -1.0, 0.0)
@@ -39,11 +40,17 @@ fn hi_car(mut commands: Commands,
          mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
 
-    commands.spawn((
-        Car,
-        Mesh3d(meshes.add(Cuboid::new(0.25, 0.25, 0.25))),
-        MeshMaterial3d(materials.add(Color::WHITE)),
-        Transform::from_xyz(0.0, 0.0, 0.0).looking_to(Vec3::NEG_Z, Vec3::Y)
+    commands.spawn(RigidBody::Dynamic)
+        .insert(Collider::cuboid(0.12, 0.12, 0.12))
+        .insert(ExternalForce {
+            force: Vec3::splat(0.0),
+            torque: Vec3::splat(0.0),
+        })
+        .insert((
+            Car,
+            Mesh3d(meshes.add(Cuboid::new(0.25, 0.25, 0.25))),
+            MeshMaterial3d(materials.add(Color::WHITE)),
+            Transform::from_xyz(0.0, 0.0, 0.0).looking_to(Vec3::NEG_Z, Vec3::Y)
     ));
 
     // spawn camera
@@ -55,36 +62,35 @@ fn hi_car(mut commands: Commands,
 
 fn update_car(
           keys: Res<ButtonInput<KeyCode>>,
-          mut query: Query<&mut Transform, With<Car>>,
+          mut query: Query<(&Transform, &mut ExternalForce), With<Car>>,
 ) {
     // Turn left
     if keys.pressed(KeyCode::KeyA) {
-        for mut transform in &mut query {
-            transform.rotate_y(0.05)
+        for (_, mut ext_force) in &mut query {
+            ext_force.torque = Vec3::new(0.0, 0.001, 0.0);
         }
     }
 
     // Turn right
     if keys.pressed(KeyCode::KeyD) {
-        for mut transform in &mut query {
-            transform.rotate_y(-0.05)
+        for (_, mut ext_force) in &mut query{
+            ext_force.torque = Vec3::new(0.0, -0.001, 0.0);
         }
     }
 
     // Drive
     if keys.pressed(KeyCode::KeyW) {
-        for mut transform in &mut query {
+        for (transform, mut ext_force) in &mut query {
             let forward = transform.forward();
-            transform.translation.add_assign(forward * 0.5);
+            ext_force.force = forward * 0.1;
         }
-
     }
 
     // Reverse
     if keys.pressed(KeyCode::KeyS) {
-        for mut transform in &mut query {
+        for (transform, mut ext_force) in &mut query {
             let forward = transform.forward();
-            transform.translation.add_assign(forward * -0.01);
+            ext_force.force = forward * -0.05;
         }
     }
 }

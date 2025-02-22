@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.15.2", features = ["jpeg"] }
+bevy_rapier3d = { version = "0.29.0", features = ["debug-render-3d"] }
