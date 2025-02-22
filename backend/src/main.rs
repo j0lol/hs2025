@@ -36,8 +36,7 @@ fn make_a_big_ass_flat_plane(mut commands: Commands,
 }
 
 fn hi_car(mut commands: Commands,
-         mut meshes: ResMut<Assets<Mesh>>,
-         mut materials: ResMut<Assets<StandardMaterial>>,
+         mut asset_server: Res<AssetServer>
 ) {
 
     commands.spawn(RigidBody::Dynamic)
@@ -48,8 +47,9 @@ fn hi_car(mut commands: Commands,
         })
         .insert((
             Car,
-            Mesh3d(meshes.add(Cuboid::new(0.25, 0.25, 0.25))),
-            MeshMaterial3d(materials.add(Color::WHITE)),
+            SceneRoot(asset_server.load(
+                GltfAssetLabel::Scene(0).from_asset("cruck.glb")
+            )),
             Transform::from_xyz(0.0, 0.0, 0.0).looking_to(Vec3::NEG_Z, Vec3::Y)
     ));
 
