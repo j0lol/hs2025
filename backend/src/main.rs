@@ -1,30 +1,38 @@
+mod game;
+
 use std::error::Error;
+use std::os::macos::raw::stat;
 use axum::extract::WebSocketUpgrade;
-use axum::extract::ws::WebSocket;
+use axum::extract::ws::{Message, WebSocket};
 use axum::response::{Html, Response};
 use axum::{Extension, Router};
 use axum::routing::{any, get};
 use serde::{Deserialize, Serialize};
 use tokio::net::TcpListener;
-
-#[derive(Clone, Debug)]
-struct Player {}
+use crate::game::{Game, Player};
 
 #[derive(Clone, Debug)]
 struct State {
-    players: Vec<Player>
+    players: Vec<Player>,
+    game: Option<Game>
 }
 
 impl State {
     fn new() -> Self {
-        State { players: vec![] }
+        State { players: vec![], game: None }
     }
 }
 
-#[derive(Deserialize, Serialize)]
-#[derive(Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 enum WsMessage {
-    Accelerometer { content: f64 }
+    Accelerometer { content: f64 },
+    JoinRequest,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+enum WsResponse {
+    JoinAllowed { identifier: u32 },
+    JoinDenied
 }
 
 #[tokio::main]
@@ -56,7 +64,7 @@ async fn ws_handler(ws: WebSocketUpgrade) -> Response {
     ws.on_upgrade(handle_socket)
 }
 
-async fn handle_socket(mut socket: WebSocket) {
+async fn handle_socket(Extension(mut state): Extension<State>, mut socket: WebSocket) {
     while let Some(msg) = socket.recv().await {
         let msg = if let Ok(msg) = msg {
             msg
@@ -67,11 +75,21 @@ async fn handle_socket(mut socket: WebSocket) {
 
         let data = msg.to_text().unwrap();
         let data: WsMessage = serde_json::from_str(data).unwrap();
-        dbg!(data);
+        match data {
+            WsMessage::Accelerometer { content } => { dbg!(content); }
+            WsMessage::JoinRequest => {
+                let player = Player {};
+                let identifier = state.players.len() as u32;
+                state.players.push(player);
 
-        if socket.send(msg).await.is_err() {
-            // client disconnected
-            return;
+                let data = WsResponse::JoinAllowed { identifier };
+                let data = serde_json::to_string(&data).unwrap();
+                let data = Message::Text(data.into());
+
+                if socket.send(data).await.is_err() {
+                    return;
+                };
+            }
         }
 
     }
