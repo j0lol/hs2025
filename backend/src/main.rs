@@ -9,7 +9,7 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, (make_a_big_ass_flat_plane, hi_car))
-        .add_systems(Update, (update_car, move_camera))
+        .add_systems(Update, (update_car, clamp_car.after(update_car), move_camera))
         .run();
 }
 
@@ -19,7 +19,7 @@ fn make_a_big_ass_flat_plane(mut commands: Commands,
                              mut meshes: ResMut<Assets<Mesh>>,
                              mut materials: ResMut<Assets<StandardMaterial>>
 ) {
-    let texture_handle = asset_server.load("./check.jpg");
+    let texture_handle = asset_server.load("3vosolo9qrr61.jpg");
 
     let material_handle = materials.add(StandardMaterial {
         base_color_texture: Some(texture_handle.clone()),
@@ -28,22 +28,24 @@ fn make_a_big_ass_flat_plane(mut commands: Commands,
         ..default()
     });
 
-    commands.spawn(Collider::cuboid(40.0, 0.1, 40.0)).insert((
-        Mesh3d(meshes.add(Plane3d::new(Vec3::Y, Vec2::new(40.0, 40.0)))),
+    commands.spawn(Collider::cuboid(74.0, 0.1, 40.0)).insert((
+        Mesh3d(meshes.add(Plane3d::new(Vec3::Y, Vec2::new(74.0, 40.0)))),
         MeshMaterial3d(material_handle),
         Transform::from_xyz(0.0, -1.0, 0.0)
     ));
 }
 
-fn hi_car(mut commands: Commands,
-         mut asset_server: Res<AssetServer>
-) {
-
+fn hi_car(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(RigidBody::Dynamic)
         .insert(Collider::cuboid(0.50, 0.50, 0.50))
+        .insert(Velocity::default())
         .insert(ExternalForce {
             force: Vec3::splat(0.0),
             torque: Vec3::splat(0.0),
+        })
+        .insert(Damping {
+            angular_damping: 10.0,
+            linear_damping: 1.0,
         })
         .insert((
             Car,
@@ -68,14 +70,20 @@ fn update_car(
     // Turn left
     if keys.pressed(KeyCode::KeyA) {
         for (_, mut ext_force) in &mut query {
-            ext_force.torque = Vec3::new(0.0, 0.05, 0.0);
+            ext_force.torque = Vec3::new(0.0, 1.50, 0.0);
         }
     }
 
     // Turn right
     if keys.pressed(KeyCode::KeyD) {
         for (_, mut ext_force) in &mut query{
-            ext_force.torque = Vec3::new(0.0, -0.05, 0.0);
+            ext_force.torque = Vec3::new(0.0, -1.50, 0.0);
+        }
+    }
+
+    if !keys.pressed(KeyCode::KeyD) && !keys.pressed(KeyCode::KeyA) {
+        for (_, mut ext_force) in &mut query {
+            ext_force.torque = Vec3::splat(0.0)
         }
     }
 
@@ -83,7 +91,7 @@ fn update_car(
     if keys.pressed(KeyCode::KeyW) {
         for (transform, mut ext_force) in &mut query {
             let forward = transform.forward();
-            ext_force.force = forward * 10.0;
+            ext_force.force = forward * 20.0;
         }
     }
 
@@ -91,8 +99,22 @@ fn update_car(
     if keys.pressed(KeyCode::KeyS) {
         for (transform, mut ext_force) in &mut query {
             let forward = transform.forward();
-            ext_force.force = forward * -0.5;
+            ext_force.force = forward * -5.0;
         }
+    }
+
+    if !keys.pressed(KeyCode::KeyW) && !keys.pressed(KeyCode::KeyS) {
+        for (_, mut ext_force) in &mut query {
+            ext_force.force = Vec3::splat(0.0);
+        }
+    }
+}
+
+fn clamp_car(
+    mut query: Query<&mut Velocity, With<Car>>,
+) {
+    for mut velocity in &mut query {
+        velocity.linvel = velocity.linvel.clamp_length_max(10.0);
     }
 }
 
