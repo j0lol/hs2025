@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<p id="payer">you are no player.</p>
+
+<button onclick='socketCallbacks();'>make a socket</button>
+<button onclick="joinGame()">join</button>
+<button onclick="buttonSend()">excellerometer</button>
+
+
+<script>
+    let player_id = null;
+    let socket = null;
+
+    function socketCallbacks() {
+        socket = new WebSocket("ws://localhost:3000", "protocolOne");
+
+
+        socket.onmessage = (event) => {
+            console.log(event.data);
+            const jayson = JSON.parse(event.data);
+            if (jayson["JoinAllowed"] ) {
+              player_id = jayson["JoinAllowed"].identifier;
+              document.querySelector("#payer").textContent = "You are player " + player_id
+            }
+
+        };
+        //
+        // socket.onmessage = (event) => {
+        //   const jayson = JSON.parse(event.data);
+        //
+        //   console.log(JSON.stringify(jayson));
+        // }
+    }
+
+    function joinGame() {
+        const obj = "JoinRequest";
+        socket.send(JSON.stringify(obj));
+    }
+
+    function buttonSend() {
+        const obj = {
+            "Accelerometer": {
+                id: player_id,
+                content: Math.random()
+            }
+        };
+        socket.send(JSON.stringify(obj));
+    }
+
+</script>
+
+</body>
+</html>
