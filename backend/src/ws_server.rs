@@ -22,7 +22,10 @@ pub struct PlayersText;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub enum WsMessage {
-    Accelerometer { id: u32, content: f64 },
+    Accelerometer { 
+        id: u32, 
+        content: f64
+     },
     JoinRequest,
 }
 
@@ -88,6 +91,7 @@ pub fn handle_message(
 
 ) -> Result<(), Box<dyn Error>> {
     let payload = payload.to_text()?;
+    dbg!(&payload);
     let payload = from_str(payload)?;
 
     let mut lobby = lobby.single_mut();

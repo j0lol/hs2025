@@ -6,14 +6,14 @@ import { isMobile } from 'react-device-detect';
 
 export default function ControlsDesktop() {
 
-    const connection = useRef(0)
+    const connection = useRef();
     const [device, setDevice] = useState("mouse (around the dot)");
 
     useEffect(() => {
-        const webSocket = new WebSocket('ws://localhost:3000')
+        let webSocket = new WebSocket('ws://localhost:3000', 'protocolOne');
         connection.current = webSocket;
         if (isMobile) {
-        setDevice("mobile device")
+            setDevice("mobile device")
         }
     }, [])
     
@@ -33,7 +33,7 @@ export default function ControlsDesktop() {
         let y = event.movementY;
         let newDir = (Math.atan2(y, x) * 180) / Math.PI;
 
-        setDir(newDir)
+        setDir(newDir);
     }
 
 
@@ -49,7 +49,7 @@ export default function ControlsDesktop() {
             setX(x);
             setY(y);
             setZ(z);
-            
+
             const data = {
                 x: x,
                 y: y,
@@ -57,10 +57,10 @@ export default function ControlsDesktop() {
                 acc: acc,
                 braking: braking
             }
-            
-            if (connection.current) {
+
+            if (connection.current.readyState != 0) {
                 try {
-                    connection.current.send(data);
+                    connection.current.send(JSON.stringify(data));
                 } catch (error) {
                     console.error(error);
                 }
@@ -90,12 +90,33 @@ export default function ControlsDesktop() {
     }, [x, y, z]);
 
     useEffect(() => {
-        setTimeout(300, () => {
-            console.log('useEffect')
-            if (dir != 0) {
-                setDir(0);
+        
+        let data = {
+            "Accelerometer": {
+                "id": 0,
+                "content": dir
             }
-        })
+        };
+
+        if (connection.current) {
+            if (connection.current.readyState != 0) {
+                connection.current.send(JSON.stringify(data));
+            }
+        }
+        // if (connection.current) {
+        //     try {
+        //         connection.current.send(JSON.stringify(data));
+        //     } catch (error) {
+        //         console.error(error);
+        //     }
+        // }
+
+        // setTimeout(300, () => {
+        //     console.log('useEffect')
+        //     if (dir != 0) {
+        //         setDir(0);
+        //     }
+        // })
     }, [dir])
 
     return (
