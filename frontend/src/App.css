@@ -4,6 +4,7 @@
   padding: 2rem;
   text-align: center;
   align-items: center;
+  font-family: 'Courier New', Courier, monospace
 }
 
 .pedals {
@@ -14,11 +15,6 @@
   gap: 10rem;
 }
 
-/* .brake {
-  width: 3rem;
-  height: 3rem;
-} */
-
 .brake img {
   object-fit: cover;
   width: 15rem;
@@ -26,6 +22,7 @@
 
 .brake:active {
   transform: translate(0px, 10px);
+  filter: brightness(0.8);
 }
 
 .accelerate img {
@@ -35,6 +32,7 @@
 
 .accelerate:active {
   transform: translate(0px, 10px);
+  filter: brightness(0.8);
 }
 
 .logo {
@@ -71,4 +69,9 @@
 
 .read-the-docs {
   color: #888;
+}
+
+h1 {
+  font-size: larger;
+  margin-bottom: 6rem;
 }
