@@ -6,19 +6,25 @@ import { useOrientation } from '@uidotdev/usehooks'
 
 function App() {
   const [count, setCount] = useState(0)
-  const orientation = useOrientation();
+  const [orientation, setOrientation] = useState(0);
 
+  window.addEventListener('deviceorientation', handleOrientation);
+
+  function handleOrientation(event) {
+    const alpha = event.alpha;
+    const beta = event.beta;
+    const gamma = event.gamma;
+    // Do stuff...
+    setOrientation([alpha, beta, gamma])
+  }
 
   return (
     <>
       <h3>
         Orientation angle:
-        {Object.keys(orientation).map((key) => {
+        {Object.keys(orientation).map((el) => {
             return (
-              <tr key={key}>
-                <th>{key}</th>
-                <td>{orientation[key]}</td>
-              </tr>
+              <p>{el}</p>
             );
           })}
       </h3>
