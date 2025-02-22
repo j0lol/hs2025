@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign};
+use std::ops::AddAssign;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -8,7 +8,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_systems(Startup, (make_a_big_ass_flat_plane, hi_car))
-        .add_systems(Update, update_car)
+        .add_systems(Update, (update_car, move_camera))
         .run();
 }
 
@@ -75,7 +75,7 @@ fn update_car(
     if keys.pressed(KeyCode::KeyW) {
         for mut transform in &mut query {
             let forward = transform.forward();
-            transform.translation.add_assign(forward * 0.01);
+            transform.translation.add_assign(forward * 0.5);
         }
 
     }
@@ -86,5 +86,19 @@ fn update_car(
             let forward = transform.forward();
             transform.translation.add_assign(forward * -0.01);
         }
+    }
+}
+
+fn move_camera(
+    mut query_cam: Query<&mut Transform, (With<Camera>, Without<Car>)>,
+    query_car: Query<&Transform, (With<Car>, Without<Camera>)>,
+) {
+    // Follow behind the car with the camera.
+    let car_transform = query_car.single();
+    for mut camera_transform in &mut query_cam {
+        camera_transform.translation = car_transform.translation
+            - car_transform.forward() * 3.0 // Camera behind the car.
+            + Vec3::new(0.0, 1.0, 0.0); // And 1 unit up in the air.
+        camera_transform.look_at(car_transform.translation, Vec3::Y)
     }
 }
