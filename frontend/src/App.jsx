@@ -1,35 +1,38 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import { useOrientation } from '@uidotdev/usehooks'
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [orientation, setOrientation] = useState(0);
+  const [x, setX] = useState("");
+  const [y, setY] = useState("");
+  const [z, setZ] = useState("");
 
-  window.addEventListener('deviceorientation', handleOrientation);
+  function handleMotionEvent(event) {
+    console.log("handle motion event", event);
 
-  function handleOrientation(event) {
-    const alpha = event.alpha;
-    const beta = event.beta;
-    const gamma = event.gamma;
-    // Do stuff...
-    setOrientation([alpha, beta, gamma])
+    var x = event.accelerationIncludingGravity.x;
+    var y = event.accelerationIncludingGravity.y;
+    var z = event.accelerationIncludingGravity.z;
+
+    setX(x);
+    setY(y);
+    setZ(z);
   }
 
+  useEffect(() => {
+    window.addEventListener("devicemotion", handleMotionEvent, true);
+  }, [x, y, z]);
+
   return (
-    <>
-      <h3>
-        Orientation angle:
-        {Object.keys(orientation).map((el) => {
-            return (
-              <p>{el}</p>
-            );
-          })}
-      </h3>
-    </>
-  )
+    <div className="App">
+      <h1>Device Motion</h1>
+      <div>
+        X - {x} Y - {y} Z - {z}
+      </div>
+    </div>
+  );
 }
 
 export default App
