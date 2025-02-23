@@ -8,9 +8,9 @@ use std::error::Error;
 
 #[derive(Component, Debug)]
 pub struct Player {
-    gas_pedal: bool,
-    brake_pedal: bool,
-    id: u32,
+    pub(crate) gas_pedal: bool,
+    pub(crate) brake_pedal: bool,
+    pub(crate) id: u32,
     accelerometer: f32,
 }
 #[derive(Component, Debug)]
