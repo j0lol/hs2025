@@ -28,7 +28,7 @@ function App() {
   }, [device])
   return (
     <>
-      {(device == "Desktop") ? <ControlsDesktop /> : <ControlsMobile />}
+      {(device == "Desktop") ? <ControlsDesktop setDevice={setDevice} /> : <ControlsMobile setDevice={setDevice} />}
     </>
   )
 }

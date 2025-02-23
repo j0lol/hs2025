@@ -4,8 +4,8 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import { isMobile } from 'react-device-detect';
 
-export default function ControlsDesktop() {
-
+export default function ControlsDesktop(props) {
+    
     const connection = useRef();
     const [device, setDevice] = useState("mouse");
     const [dir, setDir] = useState(0);
@@ -23,7 +23,6 @@ export default function ControlsDesktop() {
     useEffect(() => {
 
         const noSelectElements = document.querySelectorAll(".no-select");
-
         noSelectElements.forEach((element) => {
             element.style.webkitUserSelect = "none";
             element.style.mozUserSelect = "none";
@@ -37,8 +36,6 @@ export default function ControlsDesktop() {
             setDevice("mobile device")
         }
     }, [])
-    
-
 
     function calcAngleDegrees(x, y) {
         return (Math.atan2(y, x) * 180) / Math.PI;
@@ -71,7 +68,7 @@ export default function ControlsDesktop() {
     }
 
     function handleMotionEvent(event) {
-        
+
         if (isMobile) {
             
             var x = event.accelerationIncludingGravity.x;
@@ -165,6 +162,7 @@ export default function ControlsDesktop() {
                 <img src="src/assets/gaspedal.png" alt="" draggable="false" />
                 </div>
             </div>
+            <button onClick={()=>{props.setDevice("Mobile")}}>Switch to Gyroscope</button>
         </div>
     )
 }

@@ -34,42 +34,49 @@ export default function ControlsMobile() {
     const [acc, setAcc] = useState(false)
     const [braking, setBraking] = useState(false);
 
-    // function handleMouseMove(event) {
-    //     let x = event.movementX;
-    //     let y = event.movementY;
-    //     let newDir = (Math.atan2(y, x) * 180) / Math.PI;
+    function handleStart(event) {
+        try {
+            event.requestPermission()
+            .then( response => {
+            // (optional) Do something after API prompt dismissed.
+            if ( response == "granted" ) {
+                window.addEventListener( "devicemotion", handleMotionEvent);
+            }
+        })
 
-    //     setDir(newDir);
-    // }
+        } catch {
+            console.error('Cannot request permission')
+        }
+    }
 
     function handleMotionEvent(event) {
         
-        if (isMobile) {
-            
-            var x = event.accelerationIncludingGravity.x;
-            var y = event.accelerationIncludingGravity.y;
-            var z = event.accelerationIncludingGravity.z;
-            
-            setX(x);
-            setY(y);
-            setZ(z);
+       
+        var x = event.accelerationIncludingGravity.x;
+        var y = event.accelerationIncludingGravity.y;
+        var z = event.accelerationIncludingGravity.z;
+        
+        setX(x);
+        setY(y);
+        setZ(z);
 
-            let data = {
-                "Accelerometer": {
-                    "gas_pedal": acc,
-                    "brake_pedal": braking,
-                    "id": 0,
-                    "content": x
-                }   
-            };
+        setDir(x);
+
+        let data = {
+            "Accelerometer": {
+                "gas_pedal": acc,
+                "brake_pedal": braking,
+                "id": 0,
+                "content": x
+            }   
+        };
 
 
-            if (connection.current.readyState != 0) {
-                try {
-                    connection.current.send(JSON.stringify(data));
-                } catch (error) {
-                    console.error(error);
-                }
+        if (connection.current.readyState != 0) {
+            try {
+                connection.current.send(JSON.stringify(data));
+            } catch (error) {
+                console.error(error);
             }
         }
     }
@@ -97,7 +104,9 @@ export default function ControlsMobile() {
 
     return (
         <div className="App no-select" >
-            {dir}
+            {x} <br></br>
+            {y} <br></br>
+            {z} <br></br>
             <h1>Use your {device} to steer the car!</h1>
             <div className="pedals">
                 <div className="brake" onMouseDown={handlePressBrake} onMouseLeave={handleReleaseBrake} onMouseUp={handleReleaseBrake} >
@@ -107,6 +116,7 @@ export default function ControlsMobile() {
                 <img src="src/assets/gaspedal.png" alt="" draggable="false" />
                 </div>
             </div>
+        <button onClick={handleStart}>Start</button>
         </div>
     )
 
