@@ -7,9 +7,30 @@ import { isMobile } from 'react-device-detect';
 export default function ControlsDesktop() {
 
     const connection = useRef();
-    const [device, setDevice] = useState("mouse (around the dot)");
+    const [device, setDevice] = useState("mouse");
+    const [dir, setDir] = useState(0);
+    const [x, setX] = useState("");
+    const [y, setY] = useState("");
+    const [z, setZ] = useState("");
+    const [acc, setAcc] = useState(false)
+    const [braking, setBraking] = useState(false);
 
     useEffect(() => {
+        window.addEventListener("keydown", (handleKeyDown));
+        window.addEventListener("keyup", (handleKeyUp));
+    }, [braking, acc])
+
+    useEffect(() => {
+
+        const noSelectElements = document.querySelectorAll(".no-select");
+
+        noSelectElements.forEach((element) => {
+            element.style.webkitUserSelect = "none";
+            element.style.mozUserSelect = "none";
+            element.style.msUserSelect = "none";
+            element.style.userSelect = "none";
+          });
+
         let webSocket = new WebSocket('ws://localhost:3000', 'protocolOne');
         connection.current = webSocket;
         if (isMobile) {
@@ -17,12 +38,7 @@ export default function ControlsDesktop() {
         }
     }, [])
     
-    const [dir, setDir] = useState(0);
-    const [x, setX] = useState("");
-    const [y, setY] = useState("");
-    const [z, setZ] = useState("");
-    const [acc, setAcc] = useState(false)
-    const [braking, setBraking] = useState(false);
+
 
     function calcAngleDegrees(x, y) {
         return (Math.atan2(y, x) * 180) / Math.PI;
@@ -36,7 +52,23 @@ export default function ControlsDesktop() {
         setDir(newDir);
     }
 
+    function handleKeyDown(event) {
+        const key = event.code
+        if (key == "KeyA") {
+            setBraking(true);
+        } else if (key=="KeyD") {
+            setAcc(true);
+        }
+    }
 
+    function handleKeyUp(event) {
+        const key = event.code
+        if (key == "KeyA") {
+            setBraking(false);
+        } else if (key=="KeyD") {
+            setAcc(false);
+        }
+    }
 
     function handleMotionEvent(event) {
         
@@ -93,6 +125,8 @@ export default function ControlsDesktop() {
         
         let data = {
             "Accelerometer": {
+                "gas_pedal": acc,
+                "brake_pedal": braking,
                 "id": 0,
                 "content": dir
             }
@@ -103,32 +137,32 @@ export default function ControlsDesktop() {
                 connection.current.send(JSON.stringify(data));
             }
         }
-        // if (connection.current) {
-        //     try {
-        //         connection.current.send(JSON.stringify(data));
-        //     } catch (error) {
-        //         console.error(error);
-        //     }
-        // }
-
-        // setTimeout(300, () => {
-        //     console.log('useEffect')
-        //     if (dir != 0) {
-        //         setDir(0);
-        //     }
-        // })
-    }, [dir])
+    }, [dir, acc, braking])
 
     return (
-        <div className="App">
-            {dir}
+        <div className="App no-select" >
+            <div>
+                {dir}
+            </div>
+            <img src="src/assets/arrow.png" alt="" style={{
+                objectFit: 'cover',
+                width:'3rem',
+                transform: 'rotate('+(90+dir)+'deg)'
+                }}/>
             <h1>Use your {device} to steer the car!</h1>
             <div className="pedals">
-                <div className="brake" onMouseDown={handlePressBrake} onMouseLeave={handleReleaseBrake} onMouseUp={handleReleaseBrake}>
-                <img src="src/assets/brakepedal.png" alt=""/>
+                <div className="brake" onMouseDown={handlePressBrake} onMouseLeave={handleReleaseBrake} onMouseUp={handleReleaseBrake}
+                style={{
+                    transform: braking ? `translateY(30px)` : `translateY(0px)`
+                }}
+                >
+                <img src="src/assets/brakepedal.png" alt="" draggable="false"/>
                 </div>
-                <div className="accelerate" onMouseDown={handleActivate} onMouseLeave={handleDeactivate} onMouseUp={handleDeactivate}>
-                <img src="src/assets/gaspedal.png" alt="" />
+                <div className="accelerate" onMouseDown={handleActivate} onMouseLeave={handleDeactivate} onMouseUp={handleDeactivate} 
+                style={{
+                    transform: acc ? `translateY(30px)` : `translateY(0px)`
+                }}>
+                <img src="src/assets/gaspedal.png" alt="" draggable="false" />
                 </div>
             </div>
         </div>
