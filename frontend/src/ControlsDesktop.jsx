@@ -4,9 +4,8 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import { isMobile } from 'react-device-detect';
 
-export default function ControlsDesktop() {
-
-    const connection = useRef();
+export default function ControlsDesktop(props) {
+    
     const [device, setDevice] = useState("mouse");
     const [dir, setDir] = useState(0);
     const [x, setX] = useState("");
@@ -23,7 +22,6 @@ export default function ControlsDesktop() {
     useEffect(() => {
 
         const noSelectElements = document.querySelectorAll(".no-select");
-
         noSelectElements.forEach((element) => {
             element.style.webkitUserSelect = "none";
             element.style.mozUserSelect = "none";
@@ -31,14 +29,9 @@ export default function ControlsDesktop() {
             element.style.userSelect = "none";
           });
 
-        let webSocket = new WebSocket('ws://localhost:3000', 'protocolOne');
-        connection.current = webSocket;
-        if (isMobile) {
-            setDevice("mobile device")
-        }
+        
+        
     }, [])
-    
-
 
     function calcAngleDegrees(x, y) {
         return (Math.atan2(y, x) * 180) / Math.PI;
@@ -51,7 +44,7 @@ export default function ControlsDesktop() {
 
         setDir(newDir);
     }
-
+    
     function handleKeyDown(event) {
         const key = event.code
         if (key == "KeyA") {
@@ -71,7 +64,7 @@ export default function ControlsDesktop() {
     }
 
     function handleMotionEvent(event) {
-        
+
         if (isMobile) {
             
             var x = event.accelerationIncludingGravity.x;
@@ -90,9 +83,12 @@ export default function ControlsDesktop() {
                 braking: braking
             }
 
-            if (connection.current.readyState != 0) {
+            // console.log('[handleMotionEvent] :: ', JSON.stringify(data))
+            if (props.connection.current.readyState != 0) {
                 try {
-                    connection.current.send(JSON.stringify(data));
+                    if (props.device == "mouse") {
+                        props.connection.current.send(JSON.stringify(data));
+                    }
                 } catch (error) {
                     console.error(error);
                 }
@@ -132,9 +128,13 @@ export default function ControlsDesktop() {
             }
         };
 
-        if (connection.current) {
-            if (connection.current.readyState != 0) {
-                connection.current.send(JSON.stringify(data));
+        if (props.connection.current) {
+
+
+            if (props.connection.current.readyState != 0) {
+                if (props.device == "mouse") {
+                    props.connection.current.send(JSON.stringify(data));
+                }
             }
         }
     }, [dir, acc, braking])
@@ -165,6 +165,7 @@ export default function ControlsDesktop() {
                 <img src="src/assets/gaspedal.png" alt="" draggable="false" />
                 </div>
             </div>
+            <button onClick={()=>{props.setDevice("mobile")}}>Switch to Gyroscope</button>
         </div>
     )
 }
