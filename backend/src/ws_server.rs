@@ -70,7 +70,10 @@ pub fn receive_message(
         loop {
             match conn.receive() {
                 Ok(message) => {
-                    handle_message(conn, message, &mut players, &mut lobby, &mut commands).unwrap();
+                    match handle_message(conn, message, &mut players, &mut lobby, &mut commands) {
+                        Ok(_) => {}
+                        Err(e) => println!("{e}")
+                    }
                 }
                 Err(ReceiveError::Empty) => break,
                 Err(ReceiveError::Closed) => {
