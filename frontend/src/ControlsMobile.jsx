@@ -68,7 +68,7 @@ export default function ControlsMobile(props) {
             "Accelerometer": {
                 "gas_pedal": acc,
                 "brake_pedal": braking,
-                "id": parseInt(playerID.current.value),
+                "id": parseInt(playerID.current.value) ? parseInt(playerID.current.value): 0,
                 "content": x
             }   
         };
