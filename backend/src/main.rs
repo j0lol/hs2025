@@ -186,6 +186,10 @@ fn move_car(
                 continue
             }
 
+            if !player.gas_pedal && !player.brake_pedal {
+                ext_force.force = Vec3::splat(0.0);
+            }
+
             let forward = transform.forward();
 
             if player.gas_pedal {
@@ -194,10 +198,6 @@ fn move_car(
 
             if player.brake_pedal {
                 ext_force.force = forward * -5.0;
-            }
-
-            if !keys.pressed(KeyCode::KeyW) && !keys.pressed(KeyCode::KeyS) {
-                ext_force.force = Vec3::splat(0.0);
             }
         }
     }
