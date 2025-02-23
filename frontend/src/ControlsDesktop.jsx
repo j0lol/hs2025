@@ -44,7 +44,7 @@ export default function ControlsDesktop(props) {
 
         setDir(newDir);
     }
-    
+
     function handleKeyDown(event) {
         const key = event.code
         if (key == "KeyA") {
@@ -129,8 +129,6 @@ export default function ControlsDesktop(props) {
         };
 
         if (props.connection.current) {
-
-
             if (props.connection.current.readyState != 0) {
                 if (props.device == "mouse") {
                     props.connection.current.send(JSON.stringify(data));

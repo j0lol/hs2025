@@ -9,6 +9,8 @@ export default function ControlsMobile(props) {
 
     const [device, setDevice] = useState("device");
 
+    const [playerID, sePlayerID] = useState(0);
+
     useEffect(() => {
         
         const noSelectElements = document.querySelectorAll(".no-select");
@@ -104,6 +106,7 @@ export default function ControlsMobile(props) {
     }, [x, y, z, dir, acc, braking]);
 
     return (
+
         <div className="App no-select" >
             {x} <br></br>
             {y} <br></br>
@@ -111,12 +114,16 @@ export default function ControlsMobile(props) {
             <h1>Use your {device} to steer the car!</h1>
             <div className="pedals">
                 <div className="brake" onTouchStart={handlePressBrake} onTouchEnd={handleReleaseBrake} onTouchCancel={handleReleaseBrake} onContextMenu={(e)=>{e.preventDefault}}>
-                <img src="src/assets/brakepedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
+                    <h1>Brake</h1>
+                    <img src="src/assets/brakepedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
                 </div>
                 <div className="accelerate" onTouchStart={handleActivate} onTouchEnd={handleDeactivate} onTouchCancel={handleDeactivate} onContextMenu={(e)=>{e.preventDefault}}>
-                <img src="src/assets/gaspedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
+                    <h1>Accelerate</h1>
+                    <img src="src/assets/gaspedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
                 </div>
+
             </div>
+
             <button onClick={handleStart}>Start</button>
         </div>
     )
