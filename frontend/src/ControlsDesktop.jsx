@@ -124,7 +124,7 @@ export default function ControlsDesktop(props) {
                 "gas_pedal": acc,
                 "brake_pedal": braking,
                 "id": 0,
-                "content": dir
+                "content": (dir/18)
             }
         };
 
