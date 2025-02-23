@@ -6,7 +6,6 @@ import { isMobile } from 'react-device-detect';
 
 export default function ControlsDesktop(props) {
     
-    const connection = useRef();
     const [device, setDevice] = useState("mouse");
     const [dir, setDir] = useState(0);
     const [x, setX] = useState("");
@@ -85,10 +84,11 @@ export default function ControlsDesktop(props) {
             }
 
             // console.log('[handleMotionEvent] :: ', JSON.stringify(data))
-            if (connection.current.readyState != 0) {
+            if (props.connection.current.readyState != 0) {
                 try {
-                    
-                    (props.device == "mouse") && connection.current.send(JSON.stringify(data));
+                    if (props.device == "mouse") {
+                        props.connection.current.send(JSON.stringify(data));
+                    }
                 } catch (error) {
                     console.error(error);
                 }
@@ -128,9 +128,13 @@ export default function ControlsDesktop(props) {
             }
         };
 
-        if (connection.current) {
-            if (connection.current.readyState != 0) {
-                connection.current.send(JSON.stringify(data));
+        if (props.connection.current) {
+
+
+            if (props.connection.current.readyState != 0) {
+                if (props.device == "mouse") {
+                    props.connection.current.send(JSON.stringify(data));
+                }
             }
         }
     }, [dir, acc, braking])
@@ -161,7 +165,7 @@ export default function ControlsDesktop(props) {
                 <img src="src/assets/gaspedal.png" alt="" draggable="false" />
                 </div>
             </div>
-            <button onClick={()=>{props.setDevice("Mobile")}}>Switch to Gyroscope</button>
+            <button onClick={()=>{props.setDevice("mobile")}}>Switch to Gyroscope</button>
         </div>
     )
 }

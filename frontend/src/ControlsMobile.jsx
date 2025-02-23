@@ -7,7 +7,6 @@ import { isMobile } from 'react-device-detect';
 
 export default function ControlsMobile(props) {
 
-    const connection = useRef();
     const [device, setDevice] = useState("device");
 
     useEffect(() => {
@@ -19,9 +18,7 @@ export default function ControlsMobile(props) {
             element.style.msUserSelect = "none";
             element.style.userSelect = "none";
           });
-
-        let webSocket = new WebSocket('ws://localhost:3000', 'protocolOne');
-        connection.current = webSocket;
+          
         if (isMobile) {
             setDevice("mobile device")
         }
@@ -72,10 +69,12 @@ export default function ControlsMobile(props) {
         };
 
         // console.log('[handleMotionEvent] :: ', JSON.stringify(data))
-        if (connection.current.readyState != 0) {
+        if (props.connection.current.readyState != 0) {
             try {
-                
-                (props.device == "mobile device") && connection.current.send(JSON.stringify(data));connection.current.send(JSON.stringify(data));
+                if (props.device == "mobile device") {
+
+                    props.connection.current.send(JSON.stringify(data));
+                }
             } catch (error) {
                 console.error(error);
             }

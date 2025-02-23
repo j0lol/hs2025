@@ -12,36 +12,27 @@ function App() {
 
 
   const connection = useRef();
+  const [device, setDevice] = useState();
 
   useEffect(() => {
-    let webSocket = new WebSocket('ws://localhost:3000', 'protocolOne');
+    let webSocket = new WebSocket('wss://bak.hs2025.vps.j0.lol', 'protocolOne');
         connection.current = webSocket;
         if (isMobile) {
             setDevice("mobile device")
         }
-  })
-  const [device, setDevice] = useState();
+        else {
+          setDevice("mouse")
+        }
+  },  [])
   let [render, setRender] = useState()
 
-
-
-  useEffect(() => {
-    if (isMobile) {
-      setDevice("Mobile");
-    } else {
-      setDevice("Desktop");
-    }
-
-  
-
-  }, [])
 
   useEffect(() => {
     console.log('Device :: ', device);
   }, [device])
   return (
     <>
-      {(device == "Desktop") ? <ControlsDesktop setDevice={setDevice} device={device} connection={connection}/> : <ControlsMobile setDevice={setDevice} device={device} connection={connection}/>}
+      {(device == "mouse") ? <ControlsDesktop setDevice={setDevice} device={device} connection={connection}/> : <ControlsMobile setDevice={setDevice} device={device} connection={connection}/>}
     </>
   )
 }
