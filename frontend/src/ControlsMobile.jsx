@@ -9,7 +9,8 @@ export default function ControlsMobile(props) {
 
     const [device, setDevice] = useState("device");
 
-    const [playerID, sePlayerID] = useState(0);
+    const playerID = useRef();
+
 
     useEffect(() => {
         
@@ -67,7 +68,7 @@ export default function ControlsMobile(props) {
             "Accelerometer": {
                 "gas_pedal": acc,
                 "brake_pedal": braking,
-                "id": 0,
+                "id": playerID.current.value,
                 "content": x
             }   
         };
@@ -103,6 +104,7 @@ export default function ControlsMobile(props) {
 
     useEffect(() => {
         window.addEventListener("devicemotion", handleMotionEvent, true);
+        
     }, [x, y, z, dir, acc, braking]);
 
     return (
@@ -112,6 +114,7 @@ export default function ControlsMobile(props) {
             {y} <br></br>
             {z} <br></br>
             <h1>Use your {device} to steer the car!</h1>
+            <input type="text" ref={playerID} />
             <div className="pedals">
                 <div className="brake" onTouchStart={handlePressBrake} onTouchEnd={handleReleaseBrake} onTouchCancel={handleReleaseBrake} onContextMenu={(e)=>{e.preventDefault}}>
                     <h1>Brake</h1>
