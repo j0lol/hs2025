@@ -8,6 +8,8 @@ use std::error::Error;
 
 #[derive(Component, Debug)]
 pub struct Player {
+    gas_pedal: bool,
+    brake_pedal: bool,
     id: u32,
     accelerometer: f32,
 }
@@ -22,7 +24,12 @@ pub struct PlayersText;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub enum WsMessage {
-    Accelerometer { id: u32, content: f64 },
+    Accelerometer {
+        gas_pedal: bool,
+        brake_pedal: bool,
+        id: u32, 
+        content: f64
+     },
     JoinRequest,
 }
 
@@ -42,10 +49,6 @@ pub fn add_player(mut commands: Commands) {
         player_max_size: const { 4 }
     });
 
-    commands.spawn(Player {
-        id: 0,
-        accelerometer: 0.0,
-    });
     commands.spawn((Text::new("Weh!"), PlayersText));
 }
 
@@ -88,15 +91,18 @@ pub fn handle_message(
 
 ) -> Result<(), Box<dyn Error>> {
     let payload = payload.to_text()?;
+    dbg!(&payload);
     let payload = from_str(payload)?;
 
     let mut lobby = lobby.single_mut();
 
     match payload {
-        WsMessage::Accelerometer { id, content } => {
+        WsMessage::Accelerometer { id, content, gas_pedal, brake_pedal } => {
             for mut player in players {
                 if player.id == id {
                     player.accelerometer = content as f32;
+                    player.gas_pedal = gas_pedal;
+                    player.brake_pedal = brake_pedal;
                     conn.send(Message::Text(Utf8Bytes::from("Updated.")));
                 }
             }
@@ -108,7 +114,7 @@ pub fn handle_message(
             }
             let id = lobby.players.len();
             lobby.players.push(id as u32);
-            commands.spawn(Player { id: id as u32, accelerometer: 0.0 });
+            commands.spawn(Player { id: id as u32, accelerometer: 0.0, gas_pedal: false, brake_pedal: false });
 
             let resp = serde_json::ser::to_string(&WsResponse::JoinAllowed {identifier: id as u32 }).unwrap();
             conn.send(Message::Text(Utf8Bytes::from(resp)));

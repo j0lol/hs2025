@@ -8,11 +8,11 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start":
-        "HTTPS=true <strong>SSL_CRT_FILE=./reactcert/cert.pem SSL_KEY_FILE=./reactcert/key.pem</strong> react-scripts start"
+    "start": "HTTPS=true <strong>SSL_CRT_FILE=./reactcert/cert.pem SSL_KEY_FILE=./reactcert/key.pem</strong> react-scripts start"
   },
   "dependencies": {
     "react": "^19.0.0",
+    "react-device-detect": "^2.2.3",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {

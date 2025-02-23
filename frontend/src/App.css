@@ -3,6 +3,36 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  align-items: center;
+  font-family: 'Courier New', Courier, monospace
+}
+
+.pedals {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  gap: 10rem;
+}
+
+.brake img {
+  object-fit: cover;
+  width: 15rem;
+}
+
+.brake:active {
+  transform: translate(0px, 10px);
+  filter: brightness(0.8);
+}
+
+.accelerate img {
+  object-fit: cover;
+  width: 10rem;
+}
+
+.accelerate:active {
+  transform: translate(0px, 10px);
+  filter: brightness(0.8);
 }
 
 .logo {
@@ -39,4 +69,9 @@
 
 .read-the-docs {
   color: #888;
+}
+
+h1 {
+  font-size: larger;
+  margin-bottom: 6rem;
 }
