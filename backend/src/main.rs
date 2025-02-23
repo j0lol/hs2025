@@ -1,7 +1,7 @@
 mod ws_server;
 
-use std::ops::{Add, AddAssign};
 use bevy::prelude::*;
+use bevy::render::camera::Viewport;
 use bevy_rapier3d::prelude::*;
 use bevy_ws_server::WsPlugin;
 use crate::ws_server::{add_player, update_players_text};
@@ -9,17 +9,30 @@ use crate::ws_server::{add_player, update_players_text};
 #[derive(Component)]
 struct Car;
 
+#[derive(Component)]
+struct CameraPosition {
+    pos: UVec2,
+}
+
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, WsPlugin))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
-        .add_systems(Startup, (spawn_plane/*, spawn_ramp*/, spawn_car))
-        .add_systems(Startup, ws_server::startup)
-        .add_systems(Startup, add_player)
-        .add_systems(Update, ws_server::receive_message)
-        .add_systems(Update, (move_car, clamp_car.after(move_car)))
-        .add_systems(Update, update_players_text)
+        .add_systems(Startup, (
+            spawn_plane,
+            /*spawn_ramp,*/
+            spawn_car,
+            ws_server::startup,
+            add_player,
+        ))
+        .add_systems(Update, (
+            ws_server::receive_message,
+            move_car,
+            clamp_car.after(move_car),
+            update_players_text,
+            set_camera_viewports,
+        ))
         .run();
 }
 
@@ -66,32 +79,66 @@ fn spawn_ramp(mut commands: Commands,
 }
 
 fn spawn_car(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(RigidBody::Dynamic)
-        .insert(Collider::cuboid(0.50, 0.50, 0.50))
-        .insert(Velocity::default())
-        .insert(ExternalForce {
-            force: Vec3::splat(0.0),
-            torque: Vec3::splat(0.0),
-        })
-        .insert(Damping {
-            angular_damping: 10.0,
-            linear_damping: 1.0,
-        })
-        .insert(GravityScale(2.0))
-        .insert((
-            Car,
-            SceneRoot(asset_server.load(
-                GltfAssetLabel::Scene(0).from_asset("cruck.glb")
-            )),
-            Transform::from_xyz(0.0, 0.0, 0.0)
-                .looking_to(Vec3::NEG_Z, Vec3::Y)
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                Camera3d::default(),
-                Transform::from_xyz(0.0, 1.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ));
+    for (index, pos) in [
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 4.0),
+        Vec3::new(4.0, 0.0, 4.0),
+    ]
+        .iter()
+        .enumerate() {
+            commands.spawn(RigidBody::Dynamic)
+                .insert(Collider::cuboid(0.50, 0.50, 0.50))
+                .insert(Velocity::default())
+                .insert(ExternalForce {
+                    force: Vec3::splat(0.0),
+                    torque: Vec3::splat(0.0),
+                })
+                .insert(Damping {
+                    angular_damping: 10.0,
+                    linear_damping: 1.0,
+                })
+                .insert(GravityScale(2.0))
+                .insert((
+                    Car,
+                    SceneRoot(asset_server.load(
+                        GltfAssetLabel::Scene(0).from_asset("cruck.glb")
+                    )),
+                    Transform::from_translation(*pos)
+                        .looking_to(Vec3::NEG_Z, Vec3::Y)
+                ))
+                .with_children(|parent| {
+                    parent.spawn((
+                        Camera3d::default(),
+                        Transform::from_xyz(0.0, 1.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+                        Camera {
+                            order: index as isize,
+                            ..default()
+                        },
+                        CameraPosition {
+                            pos: UVec2::new(
+                                index as u32 % 2,
+                                index as u32 / 2
+                            ),
+                        },
+                    ));
+                });
+    }
+}
+
+fn set_camera_viewports(
+    windows: Query<&Window>,
+    mut query: Query<(&CameraPosition, &mut Camera)>,
+) {
+    let size = windows.single().physical_size() / 2;
+
+    for (camera_position, mut camera) in &mut query {
+        camera.viewport = Some(Viewport {
+            physical_position: camera_position.pos * size,
+            physical_size: size,
+            ..default()
         });
+    }
 }
 
 fn move_car(
