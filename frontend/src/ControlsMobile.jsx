@@ -110,10 +110,10 @@ export default function ControlsMobile(props) {
             {z} <br></br>
             <h1>Use your {device} to steer the car!</h1>
             <div className="pedals">
-                <div className="brake" onTouchDown={handlePressBrake} onTouchLeave={handleReleaseBrake} onTouchUp={handleReleaseBrake} onContextMenu={(e)=>{e.preventDefault}}>
+                <div className="brake" onTouchStart={handlePressBrake} onTouchEnd={handleReleaseBrake} onTouchCancel={handleReleaseBrake} onContextMenu={(e)=>{e.preventDefault}}>
                 <img src="src/assets/brakepedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
                 </div>
-                <div className="accelerate" onTouchDown={handleActivate} onTouchLeave={handleDeactivate} onTouchUp={handleDeactivate} onContextMenu={(e)=>{e.preventDefault}}>
+                <div className="accelerate" onTouchStart={handleActivate} onTouchEnd={handleDeactivate} onTouchCancel={handleDeactivate} onContextMenu={(e)=>{e.preventDefault}}>
                 <img src="src/assets/gaspedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
                 </div>
             </div>
