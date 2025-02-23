@@ -44,7 +44,7 @@ export default function ControlsDesktop(props) {
 
         setDir(newDir);
     }
-
+    
     function handleKeyDown(event) {
         const key = event.code
         if (key == "KeyA") {

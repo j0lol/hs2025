@@ -119,7 +119,7 @@ export default function ControlsMobile(props) {
                 <img src="src/assets/gaspedal.png" alt="" draggable="false" />
                 </div>
             </div>
-        
+            <button onClick={handleStart}>Start</button>
         </div>
     )
 
