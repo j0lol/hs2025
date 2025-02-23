@@ -4,10 +4,12 @@ use bevy::prelude::*;
 use bevy::render::camera::Viewport;
 use bevy_rapier3d::prelude::*;
 use bevy_ws_server::WsPlugin;
-use crate::ws_server::{add_player, update_players_text};
+use crate::ws_server::{add_player, update_players_text, Player};
 
 #[derive(Component)]
-struct Car;
+struct Car {
+    id: u32,
+}
 
 #[derive(Component)]
 struct CameraPosition {
@@ -100,7 +102,9 @@ fn spawn_car(mut commands: Commands, asset_server: Res<AssetServer>) {
                 })
                 .insert(GravityScale(2.0))
                 .insert((
-                    Car,
+                    Car {
+                        id: index as u32,
+                    },
                     SceneRoot(asset_server.load(
                         GltfAssetLabel::Scene(0).from_asset("cruck.glb")
                     )),
@@ -143,47 +147,58 @@ fn set_camera_viewports(
 
 fn move_car(
     keys: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&Transform, &mut ExternalForce), With<Car>>,
+    player_query: Query<&Player>,
+    mut car_query: Query<(&Transform, &Car, &mut ExternalForce)>,
 ) {
-    // Turn left
-    if keys.pressed(KeyCode::KeyA) {
-        for (_, mut ext_force) in &mut query {
+    // Keyboard controls for debugging
+    for (transform, _, mut ext_force) in &mut car_query {
+        // Turn left
+        if keys.pressed(KeyCode::KeyA) {
             ext_force.torque = Vec3::new(0.0, 1.50, 0.0);
         }
-    }
-
-    // Turn right
-    if keys.pressed(KeyCode::KeyD) {
-        for (_, mut ext_force) in &mut query{
+        // Turn right
+        if keys.pressed(KeyCode::KeyD) {
             ext_force.torque = Vec3::new(0.0, -1.50, 0.0);
         }
-    }
-
-    if !keys.pressed(KeyCode::KeyD) && !keys.pressed(KeyCode::KeyA) {
-        for (_, mut ext_force) in &mut query {
-            ext_force.torque = Vec3::splat(0.0)
+        // Neither left nor right
+        if !keys.pressed(KeyCode::KeyD) && !keys.pressed(KeyCode::KeyA) {
+            ext_force.torque = Vec3::splat(0.0);
         }
-    }
-
-    // Drive
-    if keys.pressed(KeyCode::KeyW) {
-        for (transform, mut ext_force) in &mut query {
-            let forward = transform.forward();
+        let forward = transform.forward();
+        // Drive
+        if keys.pressed(KeyCode::KeyW) {
             ext_force.force = forward * 80.0;
         }
-    }
-
-    // Reverse
-    if keys.pressed(KeyCode::KeyS) {
-        for (transform, mut ext_force) in &mut query {
-            let forward = transform.forward();
+        // Reverse
+        if keys.pressed(KeyCode::KeyS) {
             ext_force.force = forward * -5.0;
+        }
+        // Neither drive nor reverse
+        if !keys.pressed(KeyCode::KeyW) && !keys.pressed(KeyCode::KeyS) {
+            ext_force.force = Vec3::splat(0.0);
         }
     }
 
-    if !keys.pressed(KeyCode::KeyW) && !keys.pressed(KeyCode::KeyS) {
-        for (_, mut ext_force) in &mut query {
-            ext_force.force = Vec3::splat(0.0);
+    for player in &player_query {
+        for (transform, car, mut ext_force) in &mut car_query {
+            // Only let the player control their car.
+            if player.id != car.id {
+                continue
+            }
+
+            let forward = transform.forward();
+
+            if player.gas_pedal {
+                ext_force.force = forward * 80.0;
+            }
+
+            if player.brake_pedal {
+                ext_force.force = forward * -5.0;
+            }
+
+            if !keys.pressed(KeyCode::KeyW) && !keys.pressed(KeyCode::KeyS) {
+                ext_force.force = Vec3::splat(0.0);
+            }
         }
     }
 }
