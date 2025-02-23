@@ -50,7 +50,6 @@ export default function ControlsMobile(props) {
     }
 
     function handleMotionEvent(event) {
-        
        
         var x = event.accelerationIncludingGravity.x;
         var y = event.accelerationIncludingGravity.y;
@@ -102,8 +101,7 @@ export default function ControlsMobile(props) {
 
     useEffect(() => {
         window.addEventListener("devicemotion", handleMotionEvent, true);
-    }, [x, y, z]);
-
+    }, [x, y, z, dir, acc, braking]);
 
     return (
         <div className="App no-select" >
@@ -112,11 +110,11 @@ export default function ControlsMobile(props) {
             {z} <br></br>
             <h1>Use your {device} to steer the car!</h1>
             <div className="pedals">
-                <div className="brake" onMouseDown={handlePressBrake} onMouseLeave={handleReleaseBrake} onMouseUp={handleReleaseBrake} >
-                <img src="src/assets/brakepedal.png" alt="" draggable="false"/>
+                <div className="brake" onTouchDown={handlePressBrake} onTouchLeave={handleReleaseBrake} onTouchUp={handleReleaseBrake} onContextMenu={(e)=>{e.preventDefault}}>
+                <img src="src/assets/brakepedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
                 </div>
-                <div className="accelerate" onMouseDown={handleActivate} onMouseLeave={handleDeactivate} onMouseUp={handleDeactivate} >
-                <img src="src/assets/gaspedal.png" alt="" draggable="false" />
+                <div className="accelerate" onTouchDown={handleActivate} onTouchLeave={handleDeactivate} onTouchUp={handleDeactivate} onContextMenu={(e)=>{e.preventDefault}}>
+                <img src="src/assets/gaspedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
                 </div>
             </div>
             <button onClick={handleStart}>Start</button>
