@@ -18,7 +18,7 @@ export default function ControlsMobile(props) {
             element.style.msUserSelect = "none";
             element.style.userSelect = "none";
           });
-          
+
         if (isMobile) {
             setDevice("mobile device")
         }
@@ -33,13 +33,16 @@ export default function ControlsMobile(props) {
 
     function handleStart(event) {
         try {
-            event.requestPermission()
-            .then( response => {
+
+            if (
+                DeviceMotionEvent &&
+                typeof DeviceMotionEvent.requestPermission === "function"
+              ) {
+                DeviceMotionEvent.requestPermission();
+              }
+
             // (optional) Do something after API prompt dismissed.
-            if ( response == "granted" ) {
-                window.addEventListener( "devicemotion", handleMotionEvent);
-            }
-        })
+            window.addEventListener( "devicemotion", handleMotionEvent);
 
         } catch {
             console.error('Cannot request permission')
@@ -116,7 +119,7 @@ export default function ControlsMobile(props) {
                 <img src="src/assets/gaspedal.png" alt="" draggable="false" />
                 </div>
             </div>
-        <button onClick={handleStart}>Start</button>
+        
         </div>
     )
 
