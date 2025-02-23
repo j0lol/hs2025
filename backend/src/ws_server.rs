@@ -11,7 +11,7 @@ pub struct Player {
     pub(crate) gas_pedal: bool,
     pub(crate) brake_pedal: bool,
     pub(crate) id: u32,
-    accelerometer: f32,
+    pub(crate) accelerometer: f32,
 }
 #[derive(Component, Debug)]
 pub struct Lobby {

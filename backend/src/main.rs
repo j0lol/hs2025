@@ -171,7 +171,7 @@ fn move_car(
         }
         // Reverse
         if keys.pressed(KeyCode::KeyS) {
-            ext_force.force = forward * -5.0;
+            ext_force.force = forward * -40.0;
         }
         // Neither drive nor reverse
         if !keys.pressed(KeyCode::KeyW) && !keys.pressed(KeyCode::KeyS) {
@@ -186,6 +186,9 @@ fn move_car(
                 continue
             }
 
+            ext_force.torque = Vec3::new(0.0, 1.50, 0.0) * (player.accelerometer / 10.0);
+
+
             if !player.gas_pedal && !player.brake_pedal {
                 ext_force.force = Vec3::splat(0.0);
             }
@@ -197,7 +200,7 @@ fn move_car(
             }
 
             if player.brake_pedal {
-                ext_force.force = forward * -5.0;
+                ext_force.force = forward * -40.0;
             }
         }
     }
