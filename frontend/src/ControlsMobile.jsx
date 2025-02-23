@@ -120,7 +120,7 @@ export default function ControlsMobile(props) {
                     <h1>Brake</h1>
                     <img src="src/assets/brakepedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
                 </div>
-                <div className="accelerate" onTouchStart={handleActivate} onTouchEnd={handleDeactivate} onTouchCancel={handleDeactivate} onContextMenu={(e)=>{e.preventDefault}}>
+                <div className="accelerate" onTouchStart={handleActivate} onTouchCancel={handleDeactivate} onContextMenu={(e)=>{e.preventDefault}}>
                     <h1>Accelerate</h1>
                     <img src="src/assets/gaspedal.png" alt="" draggable="false" onContextMenu={(e)=>{e.preventDefault}}/>
                 </div>
