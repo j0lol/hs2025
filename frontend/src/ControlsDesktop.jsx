@@ -30,11 +30,8 @@ export default function ControlsDesktop(props) {
             element.style.userSelect = "none";
           });
 
-        let webSocket = new WebSocket('ws://localhost:3000', 'protocolOne');
-        connection.current = webSocket;
-        if (isMobile) {
-            setDevice("mobile device")
-        }
+        
+        
     }, [])
 
     function calcAngleDegrees(x, y) {
@@ -87,9 +84,11 @@ export default function ControlsDesktop(props) {
                 braking: braking
             }
 
+            // console.log('[handleMotionEvent] :: ', JSON.stringify(data))
             if (connection.current.readyState != 0) {
                 try {
-                    connection.current.send(JSON.stringify(data));
+                    
+                    (props.device == "mouse") && connection.current.send(JSON.stringify(data));
                 } catch (error) {
                     console.error(error);
                 }

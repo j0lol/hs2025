@@ -10,8 +10,21 @@ import ControlsMobile from './ControlsMobile';
 
 function App() {
 
+
+  const connection = useRef();
+
+  useEffect(() => {
+    let webSocket = new WebSocket('ws://localhost:3000', 'protocolOne');
+        connection.current = webSocket;
+        if (isMobile) {
+            setDevice("mobile device")
+        }
+  })
   const [device, setDevice] = useState();
-  
+  let [render, setRender] = useState()
+
+
+
   useEffect(() => {
     if (isMobile) {
       setDevice("Mobile");
@@ -28,7 +41,7 @@ function App() {
   }, [device])
   return (
     <>
-      {(device == "Desktop") ? <ControlsDesktop setDevice={setDevice} /> : <ControlsMobile setDevice={setDevice} />}
+      {(device == "Desktop") ? <ControlsDesktop setDevice={setDevice} device={device} connection={connection}/> : <ControlsMobile setDevice={setDevice} device={device} connection={connection}/>}
     </>
   )
 }
