@@ -68,7 +68,7 @@ export default function ControlsMobile(props) {
             "Accelerometer": {
                 "gas_pedal": acc,
                 "brake_pedal": braking,
-                "id": playerID.current.value,
+                "id": playerID.current.value ? playerID.current.value : 0,
                 "content": x
             }   
         };
