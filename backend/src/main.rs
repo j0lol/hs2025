@@ -8,13 +8,13 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
         .add_plugins(RapierDebugRenderPlugin::default())
-        .add_systems(Startup, (make_a_big_ass_flat_plane, hi_car))
-        .add_systems(Update, (update_car, clamp_car.after(update_car), move_camera))
+        .add_systems(Startup, (spawn_plane/*, spawn_ramp*/, spawn_car))
+        .add_systems(Update, (move_car, clamp_car.after(move_car)))
         .run();
 }
 
 
-fn make_a_big_ass_flat_plane(mut commands: Commands,
+fn spawn_plane(mut commands: Commands,
                              asset_server: Res<AssetServer>,
                              mut meshes: ResMut<Assets<Mesh>>,
                              mut materials: ResMut<Assets<StandardMaterial>>
@@ -35,7 +35,28 @@ fn make_a_big_ass_flat_plane(mut commands: Commands,
     ));
 }
 
-fn hi_car(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_ramp(mut commands: Commands,
+                             asset_server: Res<AssetServer>,
+                             mut meshes: ResMut<Assets<Mesh>>,
+                             mut materials: ResMut<Assets<StandardMaterial>>
+) {
+    let texture_handle = asset_server.load("3vosolo9qrr61.jpg");
+
+    let material_handle = materials.add(StandardMaterial {
+        base_color_texture: Some(texture_handle.clone()),
+        alpha_mode: AlphaMode::Blend,
+        unlit: true,
+        ..default()
+    });
+
+    commands.spawn(RigidBody::Fixed).insert(Collider::cuboid(5.0, 0.1, 10.0)).insert((
+        Mesh3d(meshes.add(Plane3d::new(Vec3::Y, Vec2::new(5.0, 10.0)))),
+        MeshMaterial3d(material_handle),
+        Transform::from_xyz(0.0, 0.0, 0.0).with_rotation(Quat::from_rotation_x(0.2))
+    ));
+}
+
+fn spawn_car(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(RigidBody::Dynamic)
         .insert(Collider::cuboid(0.50, 0.50, 0.50))
         .insert(Velocity::default())
@@ -47,6 +68,7 @@ fn hi_car(mut commands: Commands, asset_server: Res<AssetServer>) {
             angular_damping: 10.0,
             linear_damping: 1.0,
         })
+        .insert(GravityScale(2.0))
         .insert((
             Car,
             SceneRoot(asset_server.load(
@@ -54,16 +76,16 @@ fn hi_car(mut commands: Commands, asset_server: Res<AssetServer>) {
             )),
             Transform::from_xyz(0.0, 0.0, 0.0)
                 .looking_to(Vec3::NEG_Z, Vec3::Y)
-    ));
-
-    // spawn camera
-    commands.spawn((
-        Camera3d::default(),
-        Transform::from_xyz(0.0, 2.0, 1.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ));
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                Camera3d::default(),
+                Transform::from_xyz(0.0, 1.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ));
+        });
 }
 
-fn update_car(
+fn move_car(
           keys: Res<ButtonInput<KeyCode>>,
           mut query: Query<(&Transform, &mut ExternalForce), With<Car>>,
 ) {
@@ -91,7 +113,7 @@ fn update_car(
     if keys.pressed(KeyCode::KeyW) {
         for (transform, mut ext_force) in &mut query {
             let forward = transform.forward();
-            ext_force.force = forward * 20.0;
+            ext_force.force = forward * 80.0;
         }
     }
 
@@ -114,20 +136,6 @@ fn clamp_car(
     mut query: Query<&mut Velocity, With<Car>>,
 ) {
     for mut velocity in &mut query {
-        velocity.linvel = velocity.linvel.clamp_length_max(10.0);
-    }
-}
-
-fn move_camera(
-    mut query_cam: Query<&mut Transform, (With<Camera>, Without<Car>)>,
-    query_car: Query<&Transform, (With<Car>, Without<Camera>)>,
-) {
-    // Follow behind the car with the camera.
-    let car_transform = query_car.single();
-    for mut camera_transform in &mut query_cam {
-        camera_transform.translation = car_transform.translation
-            - car_transform.forward() * 6.0 // Camera behind the car.
-            + Vec3::new(0.0, 2.0, 0.0); // And 1 unit up in the air.
-        camera_transform.look_at(car_transform.translation, Vec3::Y)
+        velocity.linvel = velocity.linvel.clamp_length_max(20.0);
     }
 }
